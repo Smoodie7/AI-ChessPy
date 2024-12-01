@@ -5,9 +5,10 @@ import time
 import logic
 import logging
 import threading
+import ai
 from enum import Enum
 from typing import Dict, Tuple
-from screens import main_menu, game_over
+from screens import main_menu, game_over, promotion_choice
 
 # Constants
 WIDTH, HEIGHT = 800, 800
@@ -43,11 +44,14 @@ INITIAL_POSITIONS = {
 player = 'white'
 winner = None
 
+icon_surface = pygame.image.load("assets/3d-pawn.png")
+
 pygame.init()
 pygame.mixer.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Chess Game")
 clock = pygame.time.Clock()
+pygame.display.set_icon(icon_surface) 
 movement_sound = pygame.mixer.Sound("assets/movement.wav")
 
 # Global timer variables
@@ -166,12 +170,12 @@ def stop_timer():
 
 def promotion_handler(new_chess_coord, piece_color, current_positions):
     logger.debug(f"Pawn reached the last row at {new_chess_coord}. Promoting...")
-    promoted_piece = 'queen'  # Default promotion to queen (todo: ui from selection)
+    promoted_piece = promotion_choice(WIDTH, HEIGHT, player)
     current_positions[piece_color]['pawn'].remove(new_chess_coord)
     current_positions[piece_color].setdefault(promoted_piece, []).append(new_chess_coord)
     print(f"Pawn promoted to {promoted_piece} at {new_chess_coord}.")
 
-def check_game_over_by_time(white_time_left, black_time_left):
+def check_game_over_by_time(white_time_left, black_time_left, player):
     global timer_running
     logger.debug(f"Checking timer ({timer_running}) lenght: {white_time_left} && {black_time_left}")
     if white_time_left == 0:
@@ -195,9 +199,13 @@ def checkmate_detector(player_color, current_positions):
     return False
 
 def main():
+    global player, winner
+
     # Main menu screen
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    timer_length = main_menu(screen) * 60 
+    timer_length, singleplayer = main_menu(screen)
+    timer_length *= 60
+
 
     pieces = load_pieces()
     positions = {
@@ -211,7 +219,6 @@ def main():
     white_time_left = timer_length
     black_time_left = timer_length
 
-    global player, winner
     running = True
     selected_square = None
     valid_piece_selected = False
@@ -231,7 +238,7 @@ def main():
 
     while running:
         if move_made:  # Check for checkmate (soon)
-            if checkmate_detector(player, current_positions) or (timer_on and check_game_over_by_time(white_time_left, black_time_left)):
+            if checkmate_detector(player, current_positions) or (timer_on and check_game_over_by_time(white_time_left, black_time_left, player)):
                 if winner is not None:
                     winner = "Black" if player == "white" else "White"
                 print(f"GameOver. {winner} wins.")
@@ -270,18 +277,22 @@ def main():
                                     if new_chess_coord in enemy_positions:
                                         enemy_positions.remove(new_chess_coord)
 
-                        # Update positions after move
                         positions = {
                             f"{color}-{piece}-{coord}": coord
                             for color, pieces_dict in current_positions.items()
                             for piece, coords in pieces_dict.items()
                             for coord in coords
                         }
+                        logging.debug(current_positions)
 
                         # Switch turn
-                        player = "white" if player == "black" else "black"
-                        print(f"Turn changed to: {player}")
-                        move_made = True
+                        if singleplayer or None:
+                            player = "white" if player == "black" else "black"
+                            print(f"Turn changed to: {player}")
+                            move_made = True
+                        else:
+                            ai.ai_initialization(positions, player)
+                            
                     else:
                         print(f"Invalid move to {new_chess_coord}")
 

@@ -46,7 +46,7 @@ def get_moves_in_direction(col: str, row: int, dx: int, dy: int, piece_color: st
         cur_row += dy
         new_coord = f"{cur_col}{cur_row}"
 
-        # Check if the move is out of bounds
+        # Check if is out of bounds
         if cur_col not in "abcdefgh" or not (1 <= cur_row <= 8):
             break
 
@@ -63,7 +63,7 @@ def get_moves_in_direction(col: str, row: int, dx: int, dy: int, piece_color: st
 
 def movement_schema(chess_coord: str, piece_type: str, piece_color: str, positions: Dict[str, Dict[str, list]]) -> list:
     """
-    Generate the possible moves for a chess piece based on its type and current position.
+    Generate the possible moves for a chess piece.
     """
     col, row = decompose_coord(chess_coord)
     possible_moves = []

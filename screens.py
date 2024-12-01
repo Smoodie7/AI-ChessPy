@@ -33,8 +33,9 @@ def main_menu(screen):
     pawn_image = pygame.transform.smoothscale(pawn_image, (250, 250))  # Assign back to pawn_image
 
     button_1v1 = Button(WIDTH // 2 - BUTTON_WIDTH // 2, HEIGHT // 2 - BUTTON_HEIGHT // 2, BUTTON_WIDTH, BUTTON_HEIGHT, "1v1 Mode", start_game)
-    number_value = 0
-    number_display = font.render("Infinite time 8", True, (255, 255, 255))
+    time_lenght = 0
+    time_display = font.render("Infinite time 8", True, (255, 255, 255))
+    singleplayer = False
 
     plus_button = Button(WIDTH // 2 + BUTTON_WIDTH // 2 + 20, HEIGHT // 2 - BUTTON_HEIGHT // 2, TOGGLE_WIDTH, TOGGLE_HEIGHT, "+")
     minus_button = Button(WIDTH // 2 - BUTTON_WIDTH // 2 - TOGGLE_WIDTH - 20, HEIGHT // 2 - BUTTON_HEIGHT // 2, TOGGLE_WIDTH, TOGGLE_HEIGHT, "-")
@@ -54,7 +55,7 @@ def main_menu(screen):
         button_1v1.draw(screen)
         plus_button.draw(screen)
         minus_button.draw(screen)
-        screen.blit(number_display, (WIDTH // 2 - number_display.get_width() // 2, HEIGHT // 2 + BUTTON_HEIGHT // 2 + 20))
+        screen.blit(time_display, (WIDTH // 2 - time_display.get_width() // 2, HEIGHT // 2 + BUTTON_HEIGHT // 2 + 20))
         button_AI.draw(screen)
         button_quit.draw(screen)
 
@@ -64,21 +65,25 @@ def main_menu(screen):
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if button_1v1.is_clicked(event.pos):
-                    return number_value  # Return the timer value
-                if plus_button.is_clicked(event.pos) and number_value < 120:
-                    number_value += 1
-                    number_display = font.render(
-                        "Infinite time." if number_value == 0 else f"{number_value}min.", 
+                    singleplayer = True
+                    return time_lenght, singleplayer
+                if plus_button.is_clicked(event.pos) and time_lenght < 120:
+                    time_lenght += 1
+                    time_display = font.render(
+                        "Infinite time." if time_lenght == 0 else f"{time_lenght}min.", 
                         True, 
                         (255, 255, 255)
                     )
-                if minus_button.is_clicked(event.pos) and number_value > 0:
-                    number_value -= 1
-                    number_display = font.render(
-                        "Infinite time." if number_value == 0 else f"{number_value}min.", 
+                if minus_button.is_clicked(event.pos) and time_lenght > 0:
+                    time_lenght -= 1
+                    time_display = font.render(
+                        "Infinite time." if time_lenght == 0 else f"{time_lenght}min.", 
                         True, 
                         (255, 255, 255)
                     )
+                
+                if button_AI.is_clicked(event.pos):
+                    return time_lenght, singleplayer
 
                 if button_quit.is_clicked(event.pos):
                     pygame.quit()
@@ -87,34 +92,70 @@ def main_menu(screen):
         pygame.display.flip()
 
 
-def promotion_choice(WIDTH, HEIGH):
-    font = pygame.font.Font(None, 80)
-    text = "Promotion! Choose with what promoting your pawn.\n~~Press:"
+def promotion_choice(WIDTH, HEIGHT, color):
+    import os, string
+    
     screen = pygame.display.get_surface()
-    overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-    overlay.fill((0, 0, 0, 180))
-    screen.blit(overlay, (0, 0))
+    clock = pygame.time.Clock()
 
-    # Promotion text
+    font = pygame.font.Font(None, 80)
+    text = f"{color.upper()} Promotion! Choose:"
     text_surface = font.render(text, True, (255, 255, 255))
-    text_rect = text_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 40))
-    screen.blit(text_surface, text_rect)
+    text_rect = text_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 100))
 
-    # Options
-    option_font = pygame.font.Font(None, 50)
-    queen_text = "1-> Queen"
-    rook_text = "2-> Rook"
+    pieces = ["queen", "rook", "bishop", "knight"]
+    buttons = []
+    button_size = 100
+    spacing = 20
+    hover_scale = 1.3  # Scale for hover effect
+    total_width = len(pieces) * button_size + (len(pieces) - 1) * spacing
+    start_x = (WIDTH - total_width) // 2
+    y_position = HEIGHT // 2
 
-    queen_surface = option_font.render(queen_text, True, (255, 255, 255))
-    rook_surface = option_font.render(rook_text, True, (255, 255, 255))
+    # Load icons and buttons
+    for i, piece in enumerate(pieces):
+        x_position = start_x + i * (button_size + spacing)
+        piece_image_path = os.path.join("assets", f"{color}-{piece}.png")
+        piece_image = pygame.image.load(piece_image_path)
+        piece_image = pygame.transform.scale(piece_image, (button_size, button_size))
+        buttons.append((piece, pygame.Rect(x_position, y_position, button_size, button_size), piece_image))
 
-    queen_rect = queen_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 20))
-    rook_rect = rook_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 80))
+    while True:
+        pygame.display.update()
 
-    screen.blit(queen_surface, queen_rect)
-    screen.blit(rook_surface, rook_rect)
+        overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        overlay.fill((30, 30, 30, 120))
+        screen.blit(overlay, (0, 0))
 
-    pygame.display.flip()
+        screen.blit(text_surface, text_rect)
+
+        mouse_pos = pygame.mouse.get_pos()
+
+        for piece, button_rect, piece_image in buttons:
+            if button_rect.collidepoint(mouse_pos):
+                hover_image = pygame.transform.scale(
+                    piece_image,
+                    (int(button_size * hover_scale), int(button_size * hover_scale))
+                )
+                hover_rect = hover_image.get_rect(center=button_rect.center)
+                screen.blit(hover_image, hover_rect.topleft)
+            else:
+                # Draw the normal icon
+                screen.blit(piece_image, button_rect.topleft)
+
+        pygame.display.flip()
+
+        # Handle events
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                for piece, button_rect, _ in buttons:
+                    if button_rect.collidepoint(mouse_pos):
+                        return piece
+            elif event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+        clock.tick(15)
 
 def game_over(winner: str, WIDTH, HEIGHT):
     """
@@ -148,7 +189,6 @@ def game_over(winner: str, WIDTH, HEIGHT):
 
     pygame.display.flip()
 
-    # Quit or restart
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
