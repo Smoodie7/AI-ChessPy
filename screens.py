@@ -35,16 +35,16 @@ def main_menu(screen):
     button_1v1 = Button(WIDTH // 2 - BUTTON_WIDTH // 2, HEIGHT // 2 - BUTTON_HEIGHT // 2, BUTTON_WIDTH, BUTTON_HEIGHT, "1v1 Mode", start_game)
     time_lenght = 0
     time_display = font.render("Infinite time 8", True, (255, 255, 255))
-    singleplayer = False
 
     plus_button = Button(WIDTH // 2 + BUTTON_WIDTH // 2 + 20, HEIGHT // 2 - BUTTON_HEIGHT // 2, TOGGLE_WIDTH, TOGGLE_HEIGHT, "+")
     minus_button = Button(WIDTH // 2 - BUTTON_WIDTH // 2 - TOGGLE_WIDTH - 20, HEIGHT // 2 - BUTTON_HEIGHT // 2, TOGGLE_WIDTH, TOGGLE_HEIGHT, "-")
 
-    button_AI = Button(WIDTH // 2 - BUTTON_WIDTH // 2, HEIGHT // 2 + BUTTON_HEIGHT // 2 + 70, BUTTON_WIDTH, BUTTON_HEIGHT, "Versus AI", start_game)
+    button_AI = Button(WIDTH // 2 - BUTTON_WIDTH // 2, HEIGHT // 2 + BUTTON_HEIGHT // 2 + 70, BUTTON_WIDTH, BUTTON_HEIGHT, "Versus AI")
 
     button_quit = Button(WIDTH // 2 - BUTTON_WIDTH // 2, HEIGHT // 2 + BUTTON_HEIGHT // 2 + 140, BUTTON_WIDTH, BUTTON_HEIGHT, "Quit")
 
     running = True
+    singleplayer = False
     while running:
         screen.fill((30, 30, 30))
 
@@ -65,7 +65,6 @@ def main_menu(screen):
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if button_1v1.is_clicked(event.pos):
-                    singleplayer = True
                     return time_lenght, singleplayer
                 if plus_button.is_clicked(event.pos) and time_lenght < 120:
                     time_lenght += 1
@@ -83,6 +82,7 @@ def main_menu(screen):
                     )
                 
                 if button_AI.is_clicked(event.pos):
+                    singleplayer == True
                     return time_lenght, singleplayer
 
                 if button_quit.is_clicked(event.pos):
