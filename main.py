@@ -22,6 +22,7 @@ class Colors(Enum):
     DARK = (186, 135, 89)
     HIGHLIGHT = (0, 0, 0)
 
+AI_COLOR = "black"
 INITIAL_POSITIONS = {
     "white": {
         "rook": ["a1", "h1"],
@@ -177,7 +178,7 @@ def promotion_handler(new_chess_coord, piece_color, current_positions):
 
 def check_game_over_by_time(white_time_left, black_time_left, player):
     global timer_running
-    logger.debug(f"Checking timer ({timer_running}) lenght: {white_time_left} && {black_time_left}")
+    # logger.debug(f"Checking timer ({timer_running}) lenght: {white_time_left} && {black_time_left}")
     if white_time_left == 0:
         winner = "Black"
         print(f"GameOver. {winner} wins by time.")
@@ -285,13 +286,14 @@ def main():
                         }
                         logging.debug(current_positions)
 
-                        # Switch turn
-                        if singleplayer or None:
+                        # Switch turn logic
+                        if not singleplayer:
                             player = "white" if player == "black" else "black"
                             print(f"Turn changed to: {player}")
                             move_made = True
                         else:
                             ai.ai_initialization(positions, player)
+                            move_made = False
                             
                     else:
                         print(f"Invalid move to {new_chess_coord}")
@@ -335,7 +337,7 @@ def main():
             20,
             opacity 
         )
-        logger.debug(f"Rendering: {player} ~{white_time_left if player == 'white' else black_time_left}s")
+        # logger.debug(f"Rendering: {player} ~{white_time_left if player == 'white' else black_time_left}s")
 
         pygame.display.flip()
         clock.tick(FPS)
